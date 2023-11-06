@@ -3,16 +3,6 @@ spring:
     name: "cart"
   config:
     import: "configserver:http://localhost:8071"
-    name: "cart"
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-  endpoint:
-    shutdown:
-      enabled: true
-  info:
-    env:
-      enabled: true
+  cloud:
+    config:
+      name: cart, common

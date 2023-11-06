@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 public class Sach implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
-    private int id;
+    private Long id;
     private String ten;
     private String anh;
     private Integer soLuong;

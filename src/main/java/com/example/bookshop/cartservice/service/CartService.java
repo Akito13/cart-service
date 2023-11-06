@@ -79,7 +79,7 @@ public class CartService {
         Sach sach = CommonMapper.mapToSach(sachDto);
         if(cart == null) {
             ArrayList<Sach> sachList = new ArrayList<>();
-            int id = queryWithParam("http://sach/api/sach/id", "sachId", sach.getId(), Integer.class);
+            Long id = queryWithParam("http://sach/api/sach/id", "sachId", sach.getId(), Long.class);
             if(id < 0) {
                 throw new InvalidBodyException("Sách không tồn tại");
             }

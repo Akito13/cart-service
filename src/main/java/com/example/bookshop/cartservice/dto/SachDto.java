@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SachDto {
-    private int id;
+    private Long id;
     private String ten;
     private String anh;
     private Boolean trangThai;
