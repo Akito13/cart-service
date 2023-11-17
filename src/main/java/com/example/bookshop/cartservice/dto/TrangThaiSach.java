@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class TrangThaiSach implements Comparable<Integer>{
+public class TrangThaiSach implements Comparable<Long>{
     private int sachId;
     private BigDecimal gia;
     private Boolean trangThai;
@@ -24,7 +24,7 @@ public class TrangThaiSach implements Comparable<Integer>{
 
 
     @Override
-    public int compareTo(Integer o) {
-        return this.sachId - o;
+    public int compareTo(Long o) {
+        return (int)(this.sachId - o);
     }
 }

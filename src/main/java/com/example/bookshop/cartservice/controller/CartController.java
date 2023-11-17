@@ -15,7 +15,7 @@ import org.springframework.web.context.request.WebRequest;
 import java.time.LocalDateTime;
 
 @RestController
-@RequestMapping(value = "api/cart", produces = {MediaType.APPLICATION_JSON_VALUE})
+@RequestMapping(value = "api/cart", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.ALL_VALUE})
 @AllArgsConstructor
 public class CartController {
 
@@ -23,8 +23,9 @@ public class CartController {
 
     @GetMapping("{userId}")
     public ResponseEntity<ResponseDto<CartDto>> getCart(@PathVariable Long userId,
+                                                        @RequestHeader("Authorization") String authorization,
                                                         WebRequest request) {
-        CartDto cartDto = cartService.getCart(userId);
+        CartDto cartDto = cartService.getCart(userId, authorization);
         ResponsePayload<CartDto> payload = new ResponsePayload<>(cartDto);
         ResponseDto<CartDto> response = ResponseDto.<CartDto>builder()
                 .apiPath(request.getDescription(false))
@@ -36,12 +37,20 @@ public class CartController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @GetMapping("{userId}/amount")
+    public ResponseEntity<Integer> getCartAmount(@PathVariable Long userId,
+                                 @RequestHeader("Authorization") String auth) {
+
+        return new ResponseEntity<>(cartService.getCartAmount(userId, auth), HttpStatus.OK);
+    }
+
     @PostMapping("{userId}")
-    public ResponseEntity<ResponseDto<CartDto>> setCart(@PathVariable Long userId,
+    public ResponseEntity setCart(@PathVariable Long userId,
                                                         @RequestBody SachDto sachDto,
+                                                        @RequestHeader("Authorization") String authorization,
                                                         WebRequest request){
-        cartService.setCart(userId, sachDto);
-        ResponseDto<CartDto> response = ResponseDto.<CartDto>builder()
+        cartService.setCart(userId, sachDto, authorization);
+        ResponseDto response = ResponseDto.<CartDto>builder()
                 .apiPath(request.getDescription(false))
                 .statusCode(HttpStatus.OK)
                 .timestamp(LocalDateTime.now())

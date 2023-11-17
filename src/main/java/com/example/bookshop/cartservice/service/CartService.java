@@ -39,18 +39,28 @@ public class CartService {
         hashOperations = redisTemplate.opsForHash();
     }
 
-    public CartDto getCart(Long userId){
+    public CartDto getCart(Long userId, String authorization){
         Cart cart = hashOperations.get(KEY_CART, userId);
         if(cart == null) {
             throw new CartNotFoundException("Không tìm thấy giỏ hàng");
         }
         List<Sach> sachList = cart.getSachList();
         List<SachDto> sachDtos = new java.util.ArrayList<>(sachList.stream().map(CommonMapper::mapToSachDto).toList());
-        TrangThaiSach[] trangThaiSaches = webClientBuilder.build().get()
+        int sachDtoCount = sachDtos.size();
+        Object paramValues;
+        if(sachDtoCount > 1) {
+            paramValues = sachDtos.stream().map(SachDto::getId).toList();
+        } else {
+            paramValues = sachDtos.get(0).getId();
+        }
+//        queryWithParam("http://sach/api/sach/trangThaiGia", "sachIds", paramValues, TrangThaiSach[].class, authorization);
+        TrangThaiSach[] trangThaiSaches =
+                webClientBuilder.build().get()
                 .uri("http://sach/api/sach/trangThaiGia",
                         uriBuilder -> uriBuilder
                                 .queryParam("sachIds", sachDtos.stream().map(SachDto::getId).toList())
-                                .build())
+                                .build()
+                ).header("Authorization", authorization)
                 .retrieve()
                 .bodyToMono(TrangThaiSach[].class)
                 .block();
@@ -74,12 +84,22 @@ public class CartService {
         return new CartDto(cart.getId(), sachDtos);
     }
 
-    public void setCart(Long userId, SachDto sachDto){
+    public Integer getCartAmount(Long accountId, String auth) {
+        CartDto cartDto = getCart(accountId, auth);
+        return cartDto.getSachList().stream()
+                .reduce(0, (integer, sachDto) -> integer + sachDto.getSoLuong(), Integer::sum);
+    }
+
+    public void setCart(Long userId, SachDto sachDto, String authorization){
+        Boolean isUserAllowed = queryWithParam("http://account/api/account", "id", userId, Boolean.class, authorization);
+        if(!isUserAllowed) {
+            throw new InvalidBodyException("Tài khoản không thể đặt hàng");
+        }
         Cart cart = hashOperations.get(KEY_CART, userId);
         Sach sach = CommonMapper.mapToSach(sachDto);
         if(cart == null) {
             ArrayList<Sach> sachList = new ArrayList<>();
-            Long id = queryWithParam("http://sach/api/sach/id", "sachId", sach.getId(), Long.class);
+            Long id = queryWithParam("http://sach/api/sach/id", "sachId", sach.getId(), Long.class, authorization);
             if(id < 0) {
                 throw new InvalidBodyException("Sách không tồn tại");
             }
@@ -110,12 +130,13 @@ public class CartService {
         hashOperations.put(KEY_CART, userId, cart);
     }
     
-    private <V> V queryWithParam(String uri, String queryParam, V value, Class<V> valueType) {
+    private <K, V> V queryWithParam(String uri, String queryParam, K value, Class<V> valueType, String authorization) {
         return webClientBuilder.build().get()
                 .uri(uri,
                         uriBuilder -> uriBuilder
                                 .queryParam(queryParam, value)
                                 .build())
+                .header("Authorization", authorization)
                 .retrieve()
                 .bodyToMono(valueType)
                 .block();
