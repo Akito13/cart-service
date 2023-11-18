@@ -21,6 +21,6 @@ public class Sach implements Serializable {
     @Override
     public boolean equals(Object obj) {
         Sach other = (Sach) obj;
-        return other.getId() == this.id;
+        return other.getId().equals(this.id);
     }
 }
