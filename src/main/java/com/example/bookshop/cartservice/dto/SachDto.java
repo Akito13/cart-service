@@ -16,5 +16,5 @@ public class SachDto {
     private Boolean trangThai;
     private BigDecimal gia;
     private Integer soLuong;
-    private String diaChi;
+    private Double phanTramGiam;
 }

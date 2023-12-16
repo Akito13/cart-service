@@ -46,13 +46,6 @@ public class CartService {
         }
         List<Sach> sachList = cart.getSachList();
         List<SachDto> sachDtos = new java.util.ArrayList<>(sachList.stream().map(CommonMapper::mapToSachDto).toList());
-        int sachDtoCount = sachDtos.size();
-        Object paramValues;
-        if(sachDtoCount > 1) {
-            paramValues = sachDtos.stream().map(SachDto::getId).toList();
-        } else {
-            paramValues = sachDtos.get(0).getId();
-        }
 //        queryWithParam("http://sach/api/sach/trangThaiGia", "sachIds", paramValues, TrangThaiSach[].class, authorization);
         TrangThaiSach[] trangThaiSaches =
                 webClientBuilder.build().get()
@@ -68,15 +61,21 @@ public class CartService {
             sachDtos.removeIf(sachDto -> {
                 int index = Arrays.binarySearch(trangThaiSaches, sachDto.getId());
                 TrangThaiSach tts = trangThaiSaches[index];
+                System.out.println("TTS phanTramGiam: " + tts.getPhanTramGiam());
                 sachDto.setGia(tts.getGia());
                 sachDto.setTrangThai(tts.getTrangThai());
-                if(!tts.getTrangThai()){
+                sachDto.setPhanTramGiam(tts.getPhanTramGiam());
+                if(!tts.getTrangThai() || tts.getSoLuong() <= 0){
                     sachList.remove(CommonMapper.mapToSach(sachDto));
                     return true;
                 }
                 return false;
             });
-            hashOperations.put(KEY_CART, userId, cart);
+            if(sachList.isEmpty()) {
+                hashOperations.delete(KEY_CART, userId);
+            } else {
+                hashOperations.put(KEY_CART, userId, cart);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Xảy ra lỗi, vui lòng thử lại sau.");
@@ -91,10 +90,7 @@ public class CartService {
     }
 
     public void setCart(Long userId, SachDto sachDto, String authorization){
-        Boolean isUserAllowed = queryWithParam("http://account/api/account", "id", userId, Boolean.class, authorization);
-        if(!isUserAllowed) {
-            throw new InvalidBodyException("Tài khoản không thể đặt hàng");
-        }
+        checkAccountAuth(userId, authorization, "Không thể thực hiện thao tác này");
         Cart cart = hashOperations.get(KEY_CART, userId);
         Sach sach = CommonMapper.mapToSach(sachDto);
         if(cart == null) {
@@ -128,6 +124,22 @@ public class CartService {
             }
         }
         hashOperations.put(KEY_CART, userId, cart);
+    }
+
+    public void removeCart(Long userId, String auth) {
+        checkAccountAuth(userId, auth, "Không thể thực hiện thao tác này");
+        Cart cart = hashOperations.get(KEY_CART, userId);
+        if(cart != null) {
+            hashOperations.delete(KEY_CART, userId);
+            System.out.println("Cart removed for " + userId);
+        }
+    }
+
+    private void checkAccountAuth(Long userId, String authorization, String errorMessage) {
+        Boolean isUserAllowed = queryWithParam("http://account/api/account", "id", userId, Boolean.class, authorization);
+        if(!isUserAllowed) {
+            throw new InvalidBodyException(errorMessage);
+        }
     }
     
     private <K, V> V queryWithParam(String uri, String queryParam, K value, Class<V> valueType, String authorization) {

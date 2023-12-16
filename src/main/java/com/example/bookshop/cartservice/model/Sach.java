@@ -17,6 +17,7 @@ public class Sach implements Serializable {
     private String ten;
     private String anh;
     private Integer soLuong;
+    private Double phanTramGiam;
 
     @Override
     public boolean equals(Object obj) {

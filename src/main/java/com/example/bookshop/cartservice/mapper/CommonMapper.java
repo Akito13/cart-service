@@ -16,6 +16,7 @@ public class CommonMapper {
                 .anh(sach.getAnh())
                 .ten(sach.getTen())
                 .soLuong(sach.getSoLuong())
+                .phanTramGiam(sach.getPhanTramGiam())
                 .build();
     }
 
@@ -25,6 +26,7 @@ public class CommonMapper {
                 .anh(sachDto.getAnh())
                 .ten(sachDto.getTen())
                 .soLuong(sachDto.getSoLuong())
+                .phanTramGiam(sachDto.getPhanTramGiam())
                 .build();
     }
 

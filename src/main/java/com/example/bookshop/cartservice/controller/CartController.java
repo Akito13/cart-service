@@ -46,9 +46,9 @@ public class CartController {
 
     @PostMapping("{userId}")
     public ResponseEntity setCart(@PathVariable Long userId,
-                                                        @RequestBody SachDto sachDto,
-                                                        @RequestHeader("Authorization") String authorization,
-                                                        WebRequest request){
+                                  @RequestBody SachDto sachDto,
+                                  @RequestHeader("Authorization") String authorization,
+                                  WebRequest request){
         cartService.setCart(userId, sachDto, authorization);
         ResponseDto response = ResponseDto.<CartDto>builder()
                 .apiPath(request.getDescription(false))
@@ -58,5 +58,12 @@ public class CartController {
                 .payload(null)
                 .build();
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @DeleteMapping("{userId}")
+    public ResponseEntity removeCart(@PathVariable Long userId,
+                                     @RequestHeader("Authorization") String authorization){
+        cartService.removeCart(userId, authorization);
+        return ResponseEntity.ok().build();
     }
 }

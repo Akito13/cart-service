@@ -15,13 +15,14 @@ public class TrangThaiSach implements Comparable<Long>{
     private int sachId;
     private BigDecimal gia;
     private Boolean trangThai;
+    private Double phanTramGiam;
+    private Integer soLuong;
 
     @Override
     public boolean equals(Object obj) {
         TrangThaiSach tts = (TrangThaiSach) obj;
         return tts.getSachId() == this.sachId;
     }
-
 
     @Override
     public int compareTo(Long o) {
